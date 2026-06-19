@@ -1,0 +1,28 @@
+services:
+  kernel-karl-llm:
+    build: .
+    container_name: kernel-karl-llm
+    restart: unless-stopped
+    environment:
+      BACKEND: ${BACKEND:-llama_cpp}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      MODEL_PATH: ${MODEL_PATH:-/models/qwen3-14b-instruct-q4_k_m.gguf}
+      MODEL_CONTEXT: ${MODEL_CONTEXT:-8192}
+      MODEL_THREADS: ${MODEL_THREADS:-8}
+      MODEL_GPU_LAYERS: ${MODEL_GPU_LAYERS:-0}
+      DEFAULT_TEMPERATURE: ${DEFAULT_TEMPERATURE:-0.2}
+      DEFAULT_MAX_TOKENS: ${DEFAULT_MAX_TOKENS:-800}
+    ports:
+      - "${API_PORT:-8100}:8100"
+    volumes:
+      - ./models:/models
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/health', timeout=5)"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
