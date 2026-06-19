@@ -83,15 +83,52 @@ Der Standardpfad im Container lautet:
 MODEL_PATH=/models/qwen3-14b-instruct-q4_k_m.gguf
 ```
 
-## Installation
+## Installation Auf Einem Neuen Server
+
+Voraussetzungen:
+
+- Ubuntu Server oder vergleichbares Linux
+- Docker Engine
+- Docker Compose Plugin
+- Zugriff auf das GitHub-Repository
+- GGUF-Modellfile, zum Beispiel `Qwen3-14B-Instruct-Q4_K_M.gguf`
+
+### 1. Docker Pruefen
 
 ```bash
-git clone <repo-url> kernel-karl-llm
+docker --version
+docker compose version
+```
+
+Falls Docker Compose nicht als Plugin installiert ist, kann auf aelteren Systemen der Befehl `docker-compose` statt `docker compose` noetig sein.
+
+### 2. Projekt Klonen
+
+Per SSH:
+
+```bash
+cd /opt
+git clone git@github.com:smartbroadcasting/kernelkarlllm.git kernel-karl-llm
 cd kernel-karl-llm
+```
+
+Oder per HTTPS mit GitHub Personal Access Token:
+
+```bash
+cd /opt
+git clone https://github.com/smartbroadcasting/kernelkarlllm.git kernel-karl-llm
+cd kernel-karl-llm
+```
+
+GitHub akzeptiert bei HTTPS kein normales Account-Passwort fuer Git-Operationen. Als Passwort muss ein Personal Access Token verwendet werden.
+
+### 3. Konfiguration Anlegen
+
+```bash
 cp .env.example .env
 ```
 
-Passe bei Bedarf `.env` an:
+Standardkonfiguration:
 
 ```env
 API_PORT=8100
@@ -103,16 +140,53 @@ MODEL_GPU_LAYERS=0
 LOG_LEVEL=INFO
 ```
 
+Wichtige Werte:
+
+- `API_PORT`: Port auf dem Host, Standard `8100`
+- `MODEL_PATH`: Pfad des GGUF-Modells im Container
+- `MODEL_CONTEXT`: Kontextgroesse
+- `MODEL_THREADS`: CPU-Threads, `8` als konservativer Default
+- `MODEL_GPU_LAYERS`: `0` fuer CPU-Betrieb
+
+### 4. Modell Ablegen
+
+Das Modell wird nicht mit Git ausgeliefert. Lege das GGUF-File in den lokalen Ordner `models/`.
+
+```bash
+mkdir -p models
+cp /pfad/zum/Qwen3-14B-Instruct-Q4_K_M.gguf models/qwen3-14b-instruct-q4_k_m.gguf
+```
+
+Der Dateiname muss zum `MODEL_PATH` in `.env` passen:
+
+```env
+MODEL_PATH=/models/qwen3-14b-instruct-q4_k_m.gguf
+```
+
+Der lokale Ordner `models/` wird per Docker Compose nach `/models` in den Container gemountet.
+
 ## Docker Build
 
 ```bash
 docker compose build
 ```
 
-## Start
+Falls dein System noch die alte Compose-Binary nutzt:
+
+```bash
+docker-compose build
+```
+
+## Container Starten
 
 ```bash
 docker compose up -d
+```
+
+Mit alter Compose-Binary:
+
+```bash
+docker-compose up -d
 ```
 
 Logs:
@@ -125,6 +199,49 @@ Health Check:
 
 ```bash
 curl http://localhost:8100/health
+```
+
+Erwartete Antwort:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+Modellstatus pruefen:
+
+```bash
+curl http://localhost:8100/models
+```
+
+Wenn das Modell noch nicht geladen oder nicht vorhanden ist, liefern Generate/Chat/Embed eine saubere JSON-Fehlermeldung.
+
+## Container Verwaltung
+
+Status:
+
+```bash
+docker compose ps
+```
+
+Neustart:
+
+```bash
+docker compose restart kernel-karl-llm
+```
+
+Stoppen:
+
+```bash
+docker compose down
+```
+
+Neu bauen und starten:
+
+```bash
+docker compose build --pull
+docker compose up -d
 ```
 
 ## API Beispiele
