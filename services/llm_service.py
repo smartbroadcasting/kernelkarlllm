@@ -27,35 +27,51 @@ class LlamaCppAdapter(BackendAdapter):
 
     def generate(self, prompt: str, temperature: float, max_tokens: int) -> str:
         model = self.loader.get_model()
+
         with self._inference_lock:
-            result = model.create_completion(
-                prompt=prompt,
+            result = model.create_chat_completion(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
-        return result["choices"][0]["text"].strip()
+
+        return result["choices"][0]["message"]["content"].strip()
 
     def chat(
         self, messages: list[dict[str, str]], temperature: float, max_tokens: int
     ) -> dict[str, str]:
         model = self.loader.get_model()
+
         with self._inference_lock:
             result = model.create_chat_completion(
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
+
         content = result["choices"][0]["message"]["content"].strip()
-        return {"role": "assistant", "content": content}
+
+        return {
+            "role": "assistant",
+            "content": content,
+        }
 
     def embed(self, text: str) -> list[float]:
         model = self.loader.get_model()
+
         with self._inference_lock:
             result = model.create_embedding(text)
+
         return result["data"][0]["embedding"]
 
 
 def create_backend(settings: Settings, logger: logging.Logger) -> BackendAdapter:
     if settings.backend != "llama_cpp":
         raise ValueError(f"Unsupported backend: {settings.backend}")
+
     return LlamaCppAdapter(settings, logger)
