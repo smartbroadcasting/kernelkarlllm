@@ -60,14 +60,15 @@ class LlamaCppModelLoader:
             },
         )
 
-        return Llama(
-            model_path=str(self.settings.model_path),
-            n_ctx=self.settings.model_context,
-            n_threads=threads,
-            n_gpu_layers=self.settings.model_gpu_layers,
-            embedding=True,
-            verbose=False,
-        )
+return Llama(
+    model_path=str(self.settings.model_path),
+    n_ctx=self.settings.model_context,
+    n_threads=threads,
+    n_gpu_layers=self.settings.model_gpu_layers,
+    embedding=True,
+    chat_format="chatml",
+    verbose=False,
+)
 
     def info(self) -> dict[str, Any]:
         return {
