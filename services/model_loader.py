@@ -31,6 +31,7 @@ class LlamaCppModelLoader:
     def _thread_count(self) -> int:
         if self.settings.model_threads > 0:
             return self.settings.model_threads
+
         try:
             return max(1, len(os.sched_getaffinity(0)))
         except AttributeError:
@@ -41,6 +42,7 @@ class LlamaCppModelLoader:
             with self._lock:
                 if self._model is None:
                     self._model = self._load()
+
         return self._model
 
     def _load(self) -> Llama:
@@ -50,6 +52,7 @@ class LlamaCppModelLoader:
             )
 
         threads = self._thread_count()
+
         self.logger.info(
             "loading_model",
             extra={
@@ -60,21 +63,25 @@ class LlamaCppModelLoader:
             },
         )
 
-return Llama(
-    model_path=str(self.settings.model_path),
-    n_ctx=self.settings.model_context,
-    n_threads=threads,
-    n_gpu_layers=self.settings.model_gpu_layers,
-    embedding=True,
-    chat_format="chatml",
-    verbose=False,
-)
+        return Llama(
+            model_path=str(self.settings.model_path),
+            n_ctx=self.settings.model_context,
+            n_threads=threads,
+            n_gpu_layers=self.settings.model_gpu_layers,
+            embedding=True,
+            chat_format="chatml",
+            verbose=False,
+        )
 
     def info(self) -> dict[str, Any]:
         return {
             "loaded": self.is_loaded,
             "model_path": str(self.settings.model_path),
-            "loaded_model": self.model_name if self.settings.model_path.exists() else None,
+            "loaded_model": (
+                self.model_name
+                if self.settings.model_path.exists()
+                else None
+            ),
             "context": self.settings.model_context,
             "threads": self.settings.model_threads,
             "gpu_layers": self.settings.model_gpu_layers,
