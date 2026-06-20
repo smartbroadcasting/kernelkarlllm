@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     backend: str = "llama_cpp"
     log_level: str = "INFO"
 
-    model_path: Path = Path("/models/Qwen3-8B-UD-Q4_K_XL")
+    model_path: Path = Path("/models/Qwen3-8B-UD-Q4_K_XL.gguf")
     model_context: int = Field(default=32768, ge=512)
     model_threads: int = Field(default=8, ge=0)
     model_gpu_layers: int = Field(default=0, ge=0)
