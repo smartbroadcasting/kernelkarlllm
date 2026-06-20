@@ -6,7 +6,7 @@ services:
     environment:
       BACKEND: ${BACKEND:-llama_cpp}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      MODEL_PATH: ${MODEL_PATH:-/models/qwen3-14b-instruct-q4_k_m.gguf}
+      MODEL_PATH: ${MODEL_PATH:-/models/Qwen3-14B-Q4_K_M.gguf}
       MODEL_CONTEXT: ${MODEL_CONTEXT:-8192}
       MODEL_THREADS: ${MODEL_THREADS:-8}
       MODEL_GPU_LAYERS: ${MODEL_GPU_LAYERS:-0}
