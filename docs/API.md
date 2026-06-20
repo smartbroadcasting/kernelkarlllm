@@ -14,7 +14,7 @@
 {
   "backend": "llama.cpp",
   "loaded": false,
-  "model_path": "/models/qwen3-14b-instruct-q4_k_m.gguf",
+  "model_path": "/models/Qwen3-14B-Q4_K_M.gguf",
   "loaded_model": null,
   "context": 8192,
   "threads": 8,
@@ -90,6 +90,6 @@ Response:
 ```json
 {
   "error": true,
-  "message": "Model not found: /models/qwen3-14b-instruct-q4_k_m.gguf"
+  "message": "Model not found: /models/Qwen3-14B-Q4_K_M.gguf"
 }
 ```
