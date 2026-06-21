@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     default_temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     default_max_tokens: int = Field(default=800, ge=1)
 
+    log_file: str = Field(default="logs/app.log")
+    log_max_bytes: int = Field(default=10 * 1024 * 1024)  # 10 MB
+    log_backup_count: int = Field(default=5)
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
