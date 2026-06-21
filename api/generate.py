@@ -22,6 +22,9 @@ async def generate(payload: GenerateRequest, request: Request) -> GenerateRespon
         payload.prompt,
         temperature=temperature,
         max_tokens=max_tokens,
+        min_p=payload.min_p,
+        top_p=payload.top_p,
+        top_k=payload.top_k,
     )
     request.app.state.logger.info(
         "llm_generate_completed",
