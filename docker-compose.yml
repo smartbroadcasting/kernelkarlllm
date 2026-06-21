@@ -6,6 +6,7 @@ services:
     environment:
       BACKEND: ${BACKEND:-llama_cpp}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FILE: ${LOG_FILE:-logs/app.log}
       MODEL_PATH: ${MODEL_PATH:-/models/Qwen3-8B-UD-Q4_K_XL.gguf}
       MODEL_CONTEXT: ${MODEL_CONTEXT:-8192}
       MODEL_THREADS: ${MODEL_THREADS:-8}
@@ -16,6 +17,7 @@ services:
       - "${API_PORT:-8100}:8100"
     volumes:
       - ./models:/models
+      - ./logs:/app/logs
     healthcheck:
       test:
         - CMD
