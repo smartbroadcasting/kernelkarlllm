@@ -1,8 +1,11 @@
 import json
 import logging
+import logging.handlers
+import os
 import sys
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, AsyncIterator
 
 from fastapi import FastAPI, Request
@@ -61,12 +64,29 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(payload, ensure_ascii=False)
 
 
-def configure_logging(level: str) -> None:
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(JsonFormatter())
+def configure_logging(level: str, log_file: str = "", max_bytes: int = 10 * 1024 * 1024, backup_count: int = 5) -> None:
+    formatter = JsonFormatter()
+    handlers: list[logging.Handler] = []
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(formatter)
+    handlers.append(stdout_handler)
+
+    if log_file:
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.handlers.RotatingFileHandler(
+            log_path,
+            maxBytes=max_bytes,
+            backupCount=backup_count,
+            encoding="utf-8",
+        )
+        file_handler.setFormatter(formatter)
+        handlers.append(file_handler)
+
     logging.basicConfig(
         level=getattr(logging, level.upper(), logging.INFO),
-        handlers=[handler],
+        handlers=handlers,
         force=True,
     )
 
@@ -74,7 +94,12 @@ def configure_logging(level: str) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
-    configure_logging(settings.log_level)
+    configure_logging(
+        settings.log_level,
+        log_file=settings.log_file,
+        max_bytes=settings.log_max_bytes,
+        backup_count=settings.log_backup_count,
+    )
     logger = logging.getLogger("kernel_karl_llm")
     app.state.settings = settings
     app.state.logger = logger
@@ -145,9 +170,19 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(Exception)
     async def internal_error_handler(request: Request, exc: Exception) -> JSONResponse:
+        try:
+            body_bytes = await request.body()
+            body_preview = body_bytes[:500].decode("utf-8", errors="replace") if body_bytes else ""
+        except Exception:
+            body_preview = "<unreadable>"
         request.app.state.logger.exception(
             "internal_error",
-            extra={"endpoint": request.url.path},
+            extra={
+                "endpoint": request.url.path,
+                "method": request.method,
+                "body_preview": body_preview,
+                "error_type": type(exc).__name__,
+            },
         )
         return JSONResponse(
             status_code=500,
