@@ -22,6 +22,9 @@ async def chat(payload: ChatRequest, request: Request) -> ChatResponse:
         [item.model_dump() for item in payload.messages],
         temperature=temperature,
         max_tokens=max_tokens,
+        min_p=payload.min_p,
+        top_p=payload.top_p,
+        top_k=payload.top_k,
     )
     request.app.state.logger.info(
         "llm_chat_completed",
