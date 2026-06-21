@@ -25,33 +25,42 @@ class LlamaCppAdapter(BackendAdapter):
             **self.loader.info(),
         }
 
-    def generate(self, prompt: str, temperature: float, max_tokens: int) -> str:
+    def generate(self, prompt: str, temperature: float, max_tokens: int,
+                 min_p: float | None = None, top_p: float | None = None, top_k: int | None = None) -> str:
         model = self.loader.get_model()
+        kwargs: dict = dict(temperature=temperature, max_tokens=max_tokens)
+        if min_p is not None:
+            kwargs["min_p"] = min_p
+        if top_p is not None:
+            kwargs["top_p"] = top_p
+        if top_k is not None:
+            kwargs["top_k"] = top_k
 
         with self._inference_lock:
             result = model.create_chat_completion(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
-                temperature=temperature,
-                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": prompt}],
+                **kwargs,
             )
 
         return result["choices"][0]["message"]["content"].strip()
 
     def chat(
-        self, messages: list[dict[str, str]], temperature: float, max_tokens: int
+        self, messages: list[dict[str, str]], temperature: float, max_tokens: int,
+        min_p: float | None = None, top_p: float | None = None, top_k: int | None = None,
     ) -> dict[str, str]:
         model = self.loader.get_model()
+        kwargs: dict = dict(temperature=temperature, max_tokens=max_tokens)
+        if min_p is not None:
+            kwargs["min_p"] = min_p
+        if top_p is not None:
+            kwargs["top_p"] = top_p
+        if top_k is not None:
+            kwargs["top_k"] = top_k
 
         with self._inference_lock:
             result = model.create_chat_completion(
                 messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
+                **kwargs,
             )
 
         content = result["choices"][0]["message"]["content"].strip()
