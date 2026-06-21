@@ -15,13 +15,15 @@ class BackendAdapter(ABC):
 
     @abstractmethod
     def generate(
-        self, prompt: str, temperature: float, max_tokens: int
+        self, prompt: str, temperature: float, max_tokens: int,
+        min_p: float | None = None, top_p: float | None = None, top_k: int | None = None,
     ) -> str:
         raise NotImplementedError
 
     @abstractmethod
     def chat(
-        self, messages: list[dict[str, str]], temperature: float, max_tokens: int
+        self, messages: list[dict[str, str]], temperature: float, max_tokens: int,
+        min_p: float | None = None, top_p: float | None = None, top_k: int | None = None,
     ) -> dict[str, str]:
         raise NotImplementedError
 
