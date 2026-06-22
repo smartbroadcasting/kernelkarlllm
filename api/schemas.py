@@ -1,14 +1,6 @@
 from pydantic import BaseModel, Field
 
 
-class GenerateRequest(SamplingParams):
-    prompt: str = Field(..., min_length=1)
-
-
-class GenerateResponse(BaseModel):
-    text: str
-
-
 class ChatMessage(BaseModel):
     role: str = Field(..., pattern="^(system|user|assistant)$")
     content: str = Field(..., min_length=1)
@@ -24,6 +16,14 @@ class SamplingParams(BaseModel):
 
 class ChatRequest(SamplingParams):
     messages: list[ChatMessage] = Field(..., min_length=1)
+
+
+class GenerateRequest(SamplingParams):
+    prompt: str = Field(..., min_length=1)
+
+
+class GenerateResponse(BaseModel):
+    text: str
 
 
 class ChatResponse(BaseModel):
